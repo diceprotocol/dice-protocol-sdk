@@ -1,17 +1,20 @@
 /**
  * Dice Protocol SDK
- * Trustless RNG infrastructure for Robinhood Chain.
+ * Agent-friendly RNG infrastructure for Robinhood Chain.
+ *
+ * Agent-friendly: immutable contract, deterministic fees, automatic reveals.
+ * See SKILL.md in the repo root for full agent integration guide.
  *
  * Usage:
- *   import { DiceProtocol } from '@dice-protocol/sdk';
+ *   import { DiceProtocol } from '@diceprotocol/sdk';
  *
  *   const dice = new DiceProtocol({
- *     rpcUrl: 'https://rpc.testnet.chain.robinhood.com/rpc',
+ *     rpcUrl: 'https://rpc.mainnet.chain.robinhood.com',
  *     contractAddress: '0x2Ad7fC99E3d8A8dA72802936Dd5145bF672206b0',
  *   });
  *
  *   // Request randomness
- *   const seq = await dice.requestRandom(providerAddress, userRandom, signer);
+ *   const seq = await dice.requestRandom(signer, providerAddress, userRandom, gasLimit);
  *
  *   // Listen for reveals
  *   dice.onReveal((event) => {
