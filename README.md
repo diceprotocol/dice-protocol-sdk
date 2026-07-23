@@ -1,17 +1,17 @@
-# @dice-protocol/sdk
+# @diceprotocol/sdk
 
 TypeScript SDK for [Dice Protocol](https://diceprotocol.world) — trustless commit-reveal randomness oracle on Robinhood Chain.
 
 ## Install
 
 ```bash
-npm install @dice-protocol/sdk
+npm install @diceprotocol/sdk
 ```
 
 ## Quick Start
 
 ```typescript
-import { DiceProtocol } from '@dice-protocol/sdk';
+import { DiceProtocol } from '@diceprotocol/sdk';
 import { Wallet } from 'ethers';
 
 const dice = new DiceProtocol({
