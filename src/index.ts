@@ -10,7 +10,7 @@
  *
  *   const dice = new DiceProtocol({
  *     rpcUrl: 'https://rpc.mainnet.chain.robinhood.com',
- *     contractAddress: '0x2Ad7fC99E3d8A8dA72802936Dd5145bF672206b0',
+ *     contractAddress: '0xd8a0680e7699526b57140ed4eafdcc7219dc0a0c',
  *   });
  *
  *   // Request randomness
@@ -59,6 +59,7 @@ export interface RequestInfo {
   useBlockhash: boolean;
   callbackStatus: number;
   gasLimit10k: number;
+  feePaid: bigint;
 }
 
 export interface RevealEvent {
@@ -156,7 +157,15 @@ export class DiceProtocol {
       useBlockhash: req[6],
       callbackStatus: Number(req[7]),
       gasLimit10k: Number(req[8]),
+      feePaid: req[9],
     };
+  }
+
+  /**
+   * Get the refund delay in blocks.
+   */
+  async getRefundDelayBlocks(): Promise<bigint> {
+    return await this.contract.getRefundDelayBlocks();
   }
 
   /**
@@ -245,33 +254,42 @@ export class DiceProtocol {
   }
 
   /**
-   * Register as a randomness provider.
-   * @param signer The provider's wallet
-   * @param feeInWei Per-request fee in wei
+   * Admin-only: register a provider at a specific address via registerFor.
+   * @param signer Admin wallet
+   * @param providerAddress Provider address to register
    * @param commitment The hash chain commitment (x_0)
    * @param chainLength Number of values in the hash chain
    * @param uri Optional URI for revelation retrieval
+   * @param feeInWei Unused in single-fee model; retained for ABI compatibility
    */
-  async registerProvider(
+  async registerProviderFor(
     signer: Wallet,
-    feeInWei: bigint,
+    providerAddress: string,
     commitment: string,
     chainLength: number,
     uri: string = '',
+    feeInWei: bigint = 0n,
   ): Promise<string> {
     const connectedContract = new Contract(
       this.contract.target as string,
       abi,
       signer,
     );
-    const tx = await connectedContract.register(feeInWei, commitment, '0x', chainLength, uri);
+    const tx = await connectedContract.registerFor(
+      providerAddress,
+      feeInWei,
+      commitment,
+      '0x',
+      chainLength,
+      uri,
+    );
     const receipt = await tx.wait();
     return receipt.hash;
   }
 
   /**
-   * Withdraw accumulated provider fees.
-   * @param signer The provider's wallet
+   * Admin-only: withdraw accrued protocol fees to the vault.
+   * @param signer Admin wallet
    * @param amount Amount to withdraw in wei
    */
   async withdrawFees(signer: Wallet, amount: bigint): Promise<string> {
@@ -280,7 +298,26 @@ export class DiceProtocol {
       abi,
       signer,
     );
-    const tx = await connectedContract.withdraw(amount);
+    const tx = await connectedContract.withdrawFees(amount);
+    const receipt = await tx.wait();
+    return receipt.hash;
+  }
+
+  /**
+   * Refund a stuck active request after the refund timeout.
+   * Only the original requester can call this.
+   */
+  async refundRequest(
+    signer: Wallet,
+    provider: string,
+    sequenceNumber: bigint,
+  ): Promise<string> {
+    const connectedContract = new Contract(
+      this.contract.target as string,
+      abi,
+      signer,
+    );
+    const tx = await connectedContract.refundRequest(provider, sequenceNumber);
     const receipt = await tx.wait();
     return receipt.hash;
   }
@@ -375,33 +412,13 @@ export class DiceProtocol {
       current = ethers.keccak256(ethers.hexlify(current));
       revelations.push(current);
     }
-    // revelations is now [x_{length-2}, x_{length-3}, ..., x_1, x_0]
-    // Wait, that's wrong. Let me fix the order.
-    // x_{n-1} = seed (the last value)
-    // x_{n-2} = hash(x_{n-1})
-    // ...
-    // x_0 = hash(x_1) — this is the commitment
-    // x_1 is the first reveal, x_2 is the second, etc.
-    revelations.reverse(); // now [x_0, x_1, ..., x_{n-2}]
-    // Wait — we need to re-check. Actually:
-    // We start with seed = x_{n-1}. We hash forward:
-    // i=0: current = hash(seed) = x_{n-2}
-    // i=1: current = hash(x_{n-2}) = x_{n-3}
-    // ...
-    // i=n-2: current = hash(x_1) = x_0
-    // So revelations before reverse = [x_{n-2}, x_{n-3}, ..., x_0]
-    // After reverse: [x_0, x_1, ..., x_{n-2}]
-    // But x_0 is the commitment, and we reveal x_1, x_2, etc.
-    // So commitment = revelations[0] after reverse = x_0 ✓
-    // And reveal values are revelations[1] = x_1, revelations[2] = x_2, etc. ✓
-    // But wait — we also need x_{n-1} which is the seed itself.
-    // Actually, the reveal values should be x_1 through x_{n-1}.
-    // x_{n-1} = seed, but we never pushed it to revelations.
-    // Let me just simplify:
+    // Reverse into commitment-first order: [x_0, x_1, ..., x_{n-2}].
+    // The original seed is x_{n-1}, so append it as the final reveal value.
+    revelations.reverse();
 
     return {
-      commitment: revelations[0], // x_0
-      revelations: revelations.slice(1).concat([seed]), // x_1, x_2, ..., x_{n-1} = seed
+      commitment: revelations[0],
+      revelations: revelations.slice(1).concat([seed]),
     };
   }
 

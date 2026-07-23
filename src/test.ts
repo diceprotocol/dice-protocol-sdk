@@ -6,7 +6,7 @@ const { DiceProtocol, ethers } = require('./index');
 async function main() {
   const dice = new DiceProtocol({
     rpcUrl: 'https://rpc.mainnet.chain.robinhood.com',
-    contractAddress: '0x777Af3fE41855Cb9E06Ae51ed7941F4A4241690F',
+    contractAddress: '0xd8a0680e7699526b57140ed4eafdcc7219dc0a0c',
   });
 
   console.log('Contract:', dice.getAddress());
@@ -43,9 +43,16 @@ async function main() {
   console.log('\nHash chain (10 values):');
   console.log('  Commitment (x_0):', chain.commitment);
   console.log('  First reveal (x_1):', chain.revelations[0]);
-  console.log('  Last (x_9 = seed):', chain.revelations[9]);
+  console.log('  Last (x_9 = seed):', chain.revelations[8]);
+  if (protocolFee !== 25000000000000n) throw new Error(`Unexpected protocol fee: ${protocolFee}`);
+  if (info.endSequenceNumber <= info.sequenceNumber) throw new Error('Provider hash chain exhausted');
+  if (chain.revelations.length !== 9) throw new Error(`Expected 9 reveal values, got ${chain.revelations.length}`);
+  if (chain.revelations[8] !== '0x' + 'ab'.repeat(32)) throw new Error('Hash-chain final reveal should equal seed');
 
   console.log('\n✅ SDK smoke test passed');
 }
 
-main().catch(console.error);
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

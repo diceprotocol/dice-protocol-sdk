@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Derived from Pyth Entropy (https://github.com/pyth-network/pyth-crosschain), Apache-2.0
 // Copyright 2024 Pyth Network — original architecture and interfaces
-// Copyright 2026 Babylon Agent — modifications for Robinhood Chain deployment
+// Copyright 2026 Dice Protocol — modifications for Robinhood Chain deployment
 
 pragma solidity ^0.8.0;
 
@@ -28,11 +28,11 @@ interface IEntropy is IEntropyV2 {
         bytes calldata uri
     ) external;
 
-    /// @notice Withdraw accumulated provider fees
+    /// @notice Legacy provider withdrawal path (disabled in the single-fee model)
     /// @param amount The amount to withdraw in wei
     function withdraw(uint128 amount) external;
 
-    /// @notice Withdraw fees as the provider's fee manager
+    /// @notice Legacy fee-manager withdrawal path (disabled in the single-fee model)
     /// @param provider The provider address
     /// @param amount The amount to withdraw in wei
     function withdrawAsFeeManager(address provider, uint128 amount) external;
@@ -62,6 +62,15 @@ interface IEntropy is IEntropyV2 {
         bytes32 providerRevelation
     ) external;
 
+    /// @notice Refund a stuck active request after the refund timeout has elapsed.
+    /// @dev Only the original requester can call this. Clears the request and returns feePaid.
+    /// @param provider The provider address
+    /// @param sequenceNumber The request sequence number
+    function refundRequest(address provider, uint64 sequenceNumber) external;
+
+    /// @notice Get the L1-block delay required before a stuck request can be refunded
+    function getRefundDelayBlocks() external view returns (uint64 delayBlocks);
+
     /// @notice Get provider info (V1 struct format, kept for compatibility)
     function getProviderInfo(address provider)
         external
@@ -77,19 +86,19 @@ interface IEntropy is IEntropyV2 {
     /// @notice Get the fee for a request with the default gas limit
     function getFee(address provider) external view returns (uint128 feeAmount);
 
-    /// @notice Get total accrued protocol (treasury) fees
+    /// @notice Get total accrued protocol fees
     function getAccruedTreasuryFees() external view returns (uint128 accruedFeesInWei);
 
     /// @notice Set the provider's per-request fee
     function setProviderFee(uint128 newFeeInWei) external;
 
-    /// @notice Set the provider's fee as the fee manager
+    /// @notice Legacy fee-manager fee update path (disabled in the single-fee model)
     function setProviderFeeAsFeeManager(address provider, uint128 newFeeInWei) external;
 
     /// @notice Set the provider's URI
     function setProviderUri(bytes calldata newUri) external;
 
-    /// @notice Set the fee manager for msg.sender (the provider)
+    /// @notice Legacy fee-manager configuration path (disabled in the single-fee model)
     function setFeeManager(address manager) external;
 
     /// @notice Set the maximum number of hashes to record in a request

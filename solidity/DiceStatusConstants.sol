@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Derived from Pyth Entropy (https://github.com/pyth-network/pyth-crosschain), Apache-2.0
 // Copyright 2024 Pyth Network — original architecture and interfaces
-// Copyright 2026 Babylon Agent — modifications for Robinhood Chain deployment
+// Copyright 2026 Dice Protocol — modifications for Robinhood Chain deployment
 
 pragma solidity ^0.8.0;
 

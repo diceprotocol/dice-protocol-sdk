@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Derived from Pyth Entropy (https://github.com/pyth-network/pyth-crosschain), Apache-2.0
 // Copyright 2024 Pyth Network — original architecture and interfaces
-// Copyright 2026 Babylon Agent — modifications for Robinhood Chain deployment
+// Copyright 2026 Dice Protocol — modifications for Robinhood Chain deployment
 
 pragma solidity ^0.8.0;
 
@@ -77,7 +77,7 @@ interface DiceEventsV2 {
         bytes extraArgs
     );
 
-    /// @notice Emitted when a provider updates their fee manager address
+    /// @notice Reserved for backward-compatible interface/event support in the single-fee model
     event ProviderFeeManagerUpdated(
         address indexed provider,
         address oldFeeManager,
@@ -98,6 +98,20 @@ interface DiceEventsV2 {
         address indexed provider,
         address indexed recipient,
         uint128 withdrawnAmount,
+        bytes extraArgs
+    );
+
+    /// @notice Emitted when a requester refunds a stuck request after the timeout
+    /// @param provider The provider associated with the request
+    /// @param requester The original requester receiving the refund
+    /// @param sequenceNumber The request sequence number
+    /// @param amount The refunded fee amount in wei
+    /// @param extraArgs Forward-compatibility field
+    event RequestRefunded(
+        address indexed provider,
+        address indexed requester,
+        uint64 indexed sequenceNumber,
+        uint128 amount,
         bytes extraArgs
     );
 }
