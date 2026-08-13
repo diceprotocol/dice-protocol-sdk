@@ -5,7 +5,7 @@
 - **Stage:** `@diceprotocol/sdk` v1.0.2 is published.
 - **Environment:** Public SDK repository and npm package.
 - **Goal:** Keep package source, tarball, Solidity interfaces, examples, license, and documentation aligned to DiceEntropy v10.
-- **Next step:** Reconcile package description and license artifacts, build, test, and prepare a patch release for human-approved publication.
+- **Next step:** Authenticate npm, publish the verified documentation correction as `1.0.3`, then verify the registry tarball. GitHub corrections are live; npm remains at `1.0.2`.
 
 ## Architecture
 
