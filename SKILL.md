@@ -189,7 +189,7 @@ cast send 0xd8a0680e7699526b57140ed4eafdcc7219dc0a0c \
 
 - Request tx: ~50,000 gas class of cost (varies)
 - Reveal tx: paid by keeper, not requester
-- Callback gas: from your `gasLimit` parameter (examples use 200,000)
+- Callback gas: SDK default is `DEFAULT_CALLBACK_GAS_LIMIT` = `200000` when `requestRandom` omits `gasLimit`. That is **not** `0` (onchain `0` means live `provider.defaultGasLimit`, which is mutable). Pass `0` only to opt in to the provider default. Examples still pass `200000` explicitly.
 - Protocol fee: exact `0.000025 ETH` today via `getProtocolFee()`
 
 ---

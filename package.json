@@ -1,12 +1,14 @@
 {
   "name": "@diceprotocol/sdk",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "TypeScript SDK for Dice Protocol v10 — verifiable commit-reveal RNG on Robinhood Chain",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc && cp src/abi.json dist/abi.json",
-    "test": "node --test dist/test.js",
+    "test": "npm run test:unit && npm run test:smoke",
+    "test:unit": "node --test dist/callbackGas.test.js dist/requestInfo.test.js",
+    "test:smoke": "node dist/test.js",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -30,12 +32,15 @@
     "dist",
     "src/abi.json",
     "src/index.ts",
+    "src/callbackGas.ts",
+    "src/requestInfo.ts",
     "solidity",
     "README.md",
     "SKILL.md",
     "LICENSE",
     "NOTICE",
-    "package.json"
+    "package.json",
+    "remappings.txt"
   ],
   "repository": {
     "type": "git",
@@ -54,6 +59,7 @@
       "default": "./dist/index.js"
     },
     "./abi.json": "./dist/abi.json",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./solidity/*": "./solidity/*"
   }
 }

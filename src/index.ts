@@ -23,6 +23,13 @@
  */
 
 import { ethers, Contract, JsonRpcProvider, Wallet, EventLog, Interface } from 'ethers';
+import { resolveCallbackGasLimit } from './callbackGas';
+import { mapRequestInfo } from './requestInfo';
+import type { RequestInfo } from './requestInfo';
+
+export { DEFAULT_CALLBACK_GAS_LIMIT, resolveCallbackGasLimit } from './callbackGas';
+export { mapRequestInfo, REQUEST_ABI_FIELDS } from './requestInfo';
+export type { RequestInfo } from './requestInfo';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const abi = require('./abi.json') as any[];
@@ -47,19 +54,6 @@ export interface ProviderInfo {
   feeManager: string;
   maxNumHashes: number;
   defaultGasLimit: number;
-}
-
-export interface RequestInfo {
-  provider: string;
-  sequenceNumber: bigint;
-  numHashes: number;
-  commitment: string;
-  blockNumber: bigint;
-  requester: string;
-  useBlockhash: boolean;
-  callbackStatus: number;
-  gasLimit10k: number;
-  feePaid: bigint;
 }
 
 export interface RevealEvent {
@@ -147,18 +141,7 @@ export class DiceProtocol {
    */
   async getRequest(provider: string, sequenceNumber: bigint): Promise<RequestInfo> {
     const req = await this.contract.getRequestV2(provider, sequenceNumber);
-    return {
-      provider: req[0],
-      sequenceNumber: req[1],
-      numHashes: Number(req[2]),
-      commitment: req[3],
-      blockNumber: req[4],
-      requester: req[5],
-      useBlockhash: req[6],
-      callbackStatus: Number(req[7]),
-      gasLimit10k: Number(req[8]),
-      feePaid: req[9],
-    };
+    return mapRequestInfo(req);
   }
 
   /**
@@ -197,7 +180,8 @@ export class DiceProtocol {
    * Request a random number from a provider.
    * @param provider The provider address (optional, uses default)
    * @param userRandomNumber 32-byte random number (generate with crypto.getRandomValues)
-   * @param gasLimit Gas limit for the callback (optional, 0 = provider default)
+   * @param gasLimit Callback gas. Omitted uses {@link DEFAULT_CALLBACK_GAS_LIMIT} (200000).
+   *   Pass 0 only to opt in to the live provider defaultGasLimit (mutable operator state).
    * @param signer A Wallet or signer to submit the transaction
    * @returns The assigned sequence number
    */
@@ -205,7 +189,7 @@ export class DiceProtocol {
     signer: Wallet,
     provider: string | undefined,
     userRandomNumber: string,
-    gasLimit: number = 0,
+    gasLimit?: number,
   ): Promise<bigint> {
     const connectedContract = new Contract(
       this.contract.target as string,
@@ -213,8 +197,9 @@ export class DiceProtocol {
       signer,
     );
     const p = provider || (await this.getDefaultProvider());
-    const fee = await this.getFee(p, gasLimit);
-    const tx = await connectedContract.requestV2(p, userRandomNumber, gasLimit, { value: fee });
+    const callbackGas = resolveCallbackGasLimit(gasLimit);
+    const fee = await this.getFee(p, callbackGas);
+    const tx = await connectedContract.requestV2(p, userRandomNumber, callbackGas, { value: fee });
     const receipt = await tx.wait();
     // Parse the Requested event to get the sequence number
     const logs = receipt.logs.map((log: any) => {

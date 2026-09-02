@@ -12,6 +12,7 @@ TypeScript SDK for [Dice Protocol](https://diceprotocol.world) — verifiable co
 | Fee | exact `0.000025 ETH` (`25000000000000` wei) |
 | Refund delay | `6` L1 blocks (~60–90s) via `refundRequest` |
 | Provider | `0x8741b8a825644D9Ef18Faf2DAB5e9b47B900F2b6` |
+| SDK callback gas default | `200000` (`DEFAULT_CALLBACK_GAS_LIMIT`). Omitted `gasLimit` does **not** send `0`. Pass `0` only to opt in to the live provider `defaultGasLimit`. |
 
 ## Install
 
@@ -37,6 +38,7 @@ const provider = '0x8741b8a825644D9Ef18Faf2DAB5e9b47B900F2b6';
 const fee = await dice.getFee(provider, 200000); // 25000000000000n
 
 const userRandom = DiceProtocol.generateUserRandom();
+// Fourth arg optional; omitted uses DEFAULT_CALLBACK_GAS_LIMIT (200000), not provider default 0.
 const seq = await dice.requestRandom(signer, provider, userRandom, 200000);
 
 dice.onReveal((event) => {
@@ -55,7 +57,11 @@ See [`SKILL.md`](./SKILL.md) for the full agent integration guide (exact fee, re
 
 ## Solidity Interfaces
 
-Solidity interfaces ship in [`solidity/`](./solidity):
+Solidity interfaces ship in [`solidity/`](./solidity). Foundry consumers need this remapping (also in packaged `remappings.txt`):
+
+```
+@diceprotocol/sdk/=node_modules/@diceprotocol/sdk/
+```
 
 ```solidity
 import {IEntropyConsumer} from "@diceprotocol/sdk/solidity/IEntropyConsumer.sol";

@@ -1,0 +1,1 @@
+@diceprotocol/sdk/=node_modules/@diceprotocol/sdk/

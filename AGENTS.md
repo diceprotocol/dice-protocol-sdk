@@ -2,10 +2,10 @@
 
 ## Status
 
-- **Stage:** `@diceprotocol/sdk` v1.0.2 is published.
+- **Stage:** Local `1.0.3` finalized (callback default 200000, 10-field Request/`feePaid`, Solidity imports under `solidity/`). npm latest remains `1.0.2`. Not published.
 - **Environment:** Public SDK repository and npm package.
 - **Goal:** Keep package source, tarball, Solidity interfaces, examples, license, and documentation aligned to DiceEntropy v10.
-- **Next step:** Authenticate npm, publish the verified documentation correction as `1.0.3`, then verify the registry tarball. GitHub corrections are live; npm remains at `1.0.2`.
+- **Next step:** Publish `1.0.3` only with explicit human approval and npm auth. Do not publish without that approval.
 
 ## Architecture
 
@@ -14,6 +14,8 @@
 - DiceEntropy v10: `0xd8a0680e7699526b57140ed4eafdcc7219dc0a0c`.
 - Provider: `0x8741b8a825644D9Ef18Faf2DAB5e9b47B900F2b6`.
 - Exact fee: `0.000025 ETH`.
+- SDK callback gas default: `DEFAULT_CALLBACK_GAS_LIMIT = 200000`. Omitted `requestRandom` gas does not send `0`.
+- Request ABI: 10 fields. `getRequest()` maps `feePaid` from index 9 (`src/requestInfo.ts`).
 - License: Apache-2.0 with Pyth Entropy attribution in `NOTICE`.
 
 ## Build & Deploy
@@ -45,6 +47,8 @@ Publishing to npm or GitHub requires explicit human approval.
 ## Key Paths
 
 - `src/index.ts`
+- `src/callbackGas.ts`
+- `src/requestInfo.ts`
 - `src/abi.json`
 - `dist/`
 - `solidity/`

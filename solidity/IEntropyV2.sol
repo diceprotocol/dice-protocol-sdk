@@ -32,7 +32,7 @@ interface IEntropyV2 is DiceEventsV2 {
     /// @notice Request a random number from a specific provider with a user-provided random number and gas limit
     /// @param provider The address of the provider to request from
     /// @param userRandomNumber A random number provided by the user for additional entropy
-    /// @param gasLimit The gas limit for the callback function. Pass 0 for provider default.
+    /// @param gasLimit Explicit callback gas limit. Pass 0 only when intentionally accepting the mutable provider default.
     /// @return assignedSequenceNumber A unique identifier for this request
     function requestV2(address provider, bytes32 userRandomNumber, uint32 gasLimit)
         external
