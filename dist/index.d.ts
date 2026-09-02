@@ -22,6 +22,10 @@
  *   });
  */
 import { ethers, Wallet } from 'ethers';
+import type { RequestInfo } from './requestInfo';
+export { DEFAULT_CALLBACK_GAS_LIMIT, resolveCallbackGasLimit } from './callbackGas';
+export { mapRequestInfo, REQUEST_ABI_FIELDS } from './requestInfo';
+export type { RequestInfo } from './requestInfo';
 export interface DiceProtocolConfig {
     rpcUrl: string;
     contractAddress: string;
@@ -41,18 +45,6 @@ export interface ProviderInfo {
     feeManager: string;
     maxNumHashes: number;
     defaultGasLimit: number;
-}
-export interface RequestInfo {
-    provider: string;
-    sequenceNumber: bigint;
-    numHashes: number;
-    commitment: string;
-    blockNumber: bigint;
-    requester: string;
-    useBlockhash: boolean;
-    callbackStatus: number;
-    gasLimit10k: number;
-    feePaid: bigint;
 }
 export interface RevealEvent {
     provider: string;
@@ -119,7 +111,8 @@ export declare class DiceProtocol {
      * Request a random number from a provider.
      * @param provider The provider address (optional, uses default)
      * @param userRandomNumber 32-byte random number (generate with crypto.getRandomValues)
-     * @param gasLimit Gas limit for the callback (optional, 0 = provider default)
+     * @param gasLimit Callback gas. Omitted uses {@link DEFAULT_CALLBACK_GAS_LIMIT} (200000).
+     *   Pass 0 only to opt in to the live provider defaultGasLimit (mutable operator state).
      * @param signer A Wallet or signer to submit the transaction
      * @returns The assigned sequence number
      */

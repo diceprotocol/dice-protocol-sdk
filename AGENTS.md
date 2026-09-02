@@ -2,10 +2,10 @@
 
 ## Status
 
-- **Stage:** Local `1.0.3` finalized (callback default 200000, 10-field Request/`feePaid`, Solidity imports under `solidity/`). npm latest remains `1.0.2`. Not published.
+- **Stage:** `@diceprotocol/sdk@1.0.3` published 2026-09-02 (callback default 200000, 10-field Request/`feePaid`, Solidity imports under `solidity/`). Registry version endpoint confirmed `1.0.3`.
 - **Environment:** Public SDK repository and npm package.
 - **Goal:** Keep package source, tarball, Solidity interfaces, examples, license, and documentation aligned to DiceEntropy v10.
-- **Next step:** Publish `1.0.3` only with explicit human approval and npm auth. Do not publish without that approval.
+- **Next step:** Keep source, tarball, Solidity interfaces, examples, license, and documentation aligned to DiceEntropy v10. Do not republish without explicit approval.
 
 ## Architecture
 

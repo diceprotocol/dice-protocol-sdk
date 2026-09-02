@@ -23,9 +23,17 @@
  *   });
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ethers = exports.DiceProtocol = void 0;
+exports.ethers = exports.DiceProtocol = exports.REQUEST_ABI_FIELDS = exports.mapRequestInfo = exports.resolveCallbackGasLimit = exports.DEFAULT_CALLBACK_GAS_LIMIT = void 0;
 const ethers_1 = require("ethers");
 Object.defineProperty(exports, "ethers", { enumerable: true, get: function () { return ethers_1.ethers; } });
+const callbackGas_1 = require("./callbackGas");
+const requestInfo_1 = require("./requestInfo");
+var callbackGas_2 = require("./callbackGas");
+Object.defineProperty(exports, "DEFAULT_CALLBACK_GAS_LIMIT", { enumerable: true, get: function () { return callbackGas_2.DEFAULT_CALLBACK_GAS_LIMIT; } });
+Object.defineProperty(exports, "resolveCallbackGasLimit", { enumerable: true, get: function () { return callbackGas_2.resolveCallbackGasLimit; } });
+var requestInfo_2 = require("./requestInfo");
+Object.defineProperty(exports, "mapRequestInfo", { enumerable: true, get: function () { return requestInfo_2.mapRequestInfo; } });
+Object.defineProperty(exports, "REQUEST_ABI_FIELDS", { enumerable: true, get: function () { return requestInfo_2.REQUEST_ABI_FIELDS; } });
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const abi = require('./abi.json');
 class DiceProtocol {
@@ -87,18 +95,7 @@ class DiceProtocol {
      */
     async getRequest(provider, sequenceNumber) {
         const req = await this.contract.getRequestV2(provider, sequenceNumber);
-        return {
-            provider: req[0],
-            sequenceNumber: req[1],
-            numHashes: Number(req[2]),
-            commitment: req[3],
-            blockNumber: req[4],
-            requester: req[5],
-            useBlockhash: req[6],
-            callbackStatus: Number(req[7]),
-            gasLimit10k: Number(req[8]),
-            feePaid: req[9],
-        };
+        return (0, requestInfo_1.mapRequestInfo)(req);
     }
     /**
      * Get the refund delay in blocks.
@@ -131,15 +128,17 @@ class DiceProtocol {
      * Request a random number from a provider.
      * @param provider The provider address (optional, uses default)
      * @param userRandomNumber 32-byte random number (generate with crypto.getRandomValues)
-     * @param gasLimit Gas limit for the callback (optional, 0 = provider default)
+     * @param gasLimit Callback gas. Omitted uses {@link DEFAULT_CALLBACK_GAS_LIMIT} (200000).
+     *   Pass 0 only to opt in to the live provider defaultGasLimit (mutable operator state).
      * @param signer A Wallet or signer to submit the transaction
      * @returns The assigned sequence number
      */
-    async requestRandom(signer, provider, userRandomNumber, gasLimit = 0) {
+    async requestRandom(signer, provider, userRandomNumber, gasLimit) {
         const connectedContract = new ethers_1.Contract(this.contract.target, abi, signer);
         const p = provider || (await this.getDefaultProvider());
-        const fee = await this.getFee(p, gasLimit);
-        const tx = await connectedContract.requestV2(p, userRandomNumber, gasLimit, { value: fee });
+        const callbackGas = (0, callbackGas_1.resolveCallbackGasLimit)(gasLimit);
+        const fee = await this.getFee(p, callbackGas);
+        const tx = await connectedContract.requestV2(p, userRandomNumber, callbackGas, { value: fee });
         const receipt = await tx.wait();
         // Parse the Requested event to get the sequence number
         const logs = receipt.logs.map((log) => {
