@@ -1,6 +1,11 @@
 # @diceprotocol/sdk
 
-TypeScript SDK for [Dice Protocol](https://diceprotocol.world) — verifiable commit-reveal randomness oracle on Robinhood Chain.
+TypeScript SDK for [Dice Protocol](https://diceprotocol.world): commit-reveal randomness oracle on Robinhood Chain.
+
+Key features: fast reveal, cheap predictable fee (`0.000025 ETH` exact), agent-friendly (`SKILL.md`, x402).
+
+Canonical page: https://diceprotocol.world/robinhood-chain-rng/
+Agent files: https://diceprotocol.world/llms.txt · https://diceprotocol.world/skills/dice-integration/SKILL.md
 
 ## Live v10
 
